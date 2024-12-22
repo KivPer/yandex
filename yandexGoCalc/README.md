@@ -11,19 +11,20 @@
 Для запуска проекта выполните следующую команду в терминале:
 
 ```bash
-go run ./cmd/calc_service/..
+go run yandexGoCalc\cmd\calc_service\main.go
 ```
 Убедитесь, что вы находитесь в корневой директории проекта, и у вас установлен Go.
 
 ## Примеры использования
 ### Успешный сценарий
 Чтобы вычислить арифметическое выражение, отправьте POST-запрос с помощью curl:
-
-curl --location 'http://localhost:8080/api/v1/calculate' \
---header 'Content-Type: application/json' \
+```
+curl --location 'http://localhost:8080/api/v1/calculate'
+--header 'Content-Type: application/json'
 --data '{
   "expression": "2+2*2"
 }'
+```
 Ожидаемый ответ:
 
 {
@@ -31,12 +32,13 @@ curl --location 'http://localhost:8080/api/v1/calculate' \
 }
 ### Сценарий ошибки 422 (некорректное выражение)
 Если вы отправите некорректное выражение, например:
-
-curl --location 'http://localhost:8080/api/v1/calculate' \
---header 'Content-Type: application/json' \
+```
+curl --location 'http://localhost:8080/api/v1/calculate'
+--header 'Content-Type: application/json'
 --data '{
   "expression": "2+2*x"
 }'
+```
 Ожидаемый ответ:
 
 {
@@ -44,12 +46,13 @@ curl --location 'http://localhost:8080/api/v1/calculate' \
 }
 ### Сценарий ошибки 500 (внутренняя ошибка сервера)
 Если произойдет внутренняя ошибка (например, деление на ноль), отправьте:
-
-curl --location 'http://localhost:8080/api/v1/calculate' \
---header 'Content-Type: application/json' \
+```
+curl --location 'http://localhost:8080/api/v1/calculate'
+--header 'Content-Type: application/json'
 --data '{
   "expression": "4/0"
 }'
+```
 Ожидаемый ответ:
 
 {
