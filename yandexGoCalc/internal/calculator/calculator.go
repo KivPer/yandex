@@ -29,7 +29,7 @@ func Calc(expression string) (float64, error) {
 			numStr := expression[start:i]
 			num, err := strconv.ParseFloat(numStr, 64)
 			if err != nil {
-				return 0, errors.New("Invalid expression")
+				return 0, errors.New("invalid expression")
 			}
 			stackNum = append(stackNum, num)
 			i--
@@ -42,7 +42,7 @@ func Calc(expression string) (float64, error) {
 				}
 			}
 			if len(stackOp) == 0 || stackOp[len(stackOp)-1] != '(' {
-				return 0, errors.New("Invalid expression")
+				return 0, errors.New("invalid expression")
 			}
 			stackOp = stackOp[:len(stackOp)-1]
 		} else if char == '+' || char == '-' || char == '*' || char == '/' {
@@ -53,13 +53,13 @@ func Calc(expression string) (float64, error) {
 			}
 			stackOp = append(stackOp, char)
 		} else {
-			return 0, errors.New("Invalid expression")
+			return 0, errors.New("invalid expression")
 		}
 	}
 
 	for len(stackOp) > 0 {
 		if stackOp[len(stackOp)-1] == '(' {
-			return 0, errors.New("Invalid expression")
+			return 0, errors.New("invalid expression")
 		}
 		if err := calculate(&stackNum, &stackOp); err != nil {
 			return 0, err
@@ -67,7 +67,7 @@ func Calc(expression string) (float64, error) {
 	}
 
 	if len(stackNum) != 1 {
-		return 0, errors.New("Invalid expression")
+		return 0, errors.New("invalid expression")
 	}
 
 	return stackNum[0], nil
@@ -75,7 +75,7 @@ func Calc(expression string) (float64, error) {
 
 func calculate(stackNum *[]float64, stackOp *[]rune) error {
 	if len(*stackNum) < 2 {
-		return errors.New("Invalid expression")
+		return errors.New("invalid expression")
 	}
 
 	num2 := (*stackNum)[len(*stackNum)-1]
@@ -95,7 +95,7 @@ func calculate(stackNum *[]float64, stackOp *[]rune) error {
 		result = num1 * num2
 	case '/':
 		if num2 == 0 {
-			return errors.New("Division by zero")
+			return errors.New("division by zero")
 		}
 		result = num1 / num2
 	}
