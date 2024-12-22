@@ -1,67 +1,106 @@
 package main
 
 import (
-	"fmt"
-	"net/http"
-	"regexp"
+	"errors"
+	"strconv"
 )
 
-// Middleware для установки значения по умолчанию для имени
-func SetDefaultName(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		name := r.URL.Query().Get("name")
+func Calc(expression string) (float64, error) {
+	stackNum := []float64{}
+	stackOp := []rune{}
 
-		// Если имя пустое, устанавливаем значение по умолчанию
-		if name == "" {
-			r.URL.Query().Set("name", "stranger")
+	precedence := map[rune]int{
+		'+': 1,
+		'-': 1,
+		'*': 2,
+		'/': 2,
+	}
+
+	for i, char := range expression {
+		if char == ' ' {
+			continue
 		}
 
-		// Обновляем параметры формы
-		r.ParseForm()
-
-		next(w, r)
-	}
-}
-
-// Middleware для проверки корректности имени
-func Sanitize(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		name := r.URL.Query().Get("name")
-
-		// Проверяем, содержит ли имя что-то кроме английских букв
-		if isDirtyHacker(name) {
-			fmt.Fprintf(w, "Hello, dirty hacker!")
-			return
+		if char >= '0' && char <= '9' {
+			start := i
+			for i < len(expression) && (expression[i] >= '0' && expression[i] <= '9' || expression[i] == '.') {
+				i++
+			}
+			numStr := expression[start:i]
+			num, err := strconv.ParseFloat(numStr, 64)
+			if err != nil {
+				return 0, errors.New("Invalid expression")
+			}
+			stackNum = append(stackNum, num)
+			i--
+		} else if char == '(' {
+			stackOp = append(stackOp, '(')
+		} else if char == ')' {
+			for len(stackOp) > 0 && stackOp[len(stackOp)-1] != '(' {
+				if err := calculate(&stackNum, &stackOp); err != nil {
+					return 0, err
+				}
+			}
+			if len(stackOp) == 0 || stackOp[len(stackOp)-1] != '(' {
+				return 0, errors.New("Invalid expression")
+			}
+			stackOp = stackOp[:len(stackOp)-1]
+		} else if char == '+' || char == '-' || char == '*' || char == '/' {
+			for len(stackOp) > 0 && precedence[stackOp[len(stackOp)-1]] >= precedence[char] {
+				if err := calculate(&stackNum, &stackOp); err != nil {
+					return 0, err
+				}
+			}
+			stackOp = append(stackOp, char)
+		} else {
+			return 0, errors.New("Invalid expression")
 		}
-
-		next(w, r)
 	}
+
+	for len(stackOp) > 0 {
+		if stackOp[len(stackOp)-1] == '(' {
+			return 0, errors.New("Invalid expression")
+		}
+		if err := calculate(&stackNum, &stackOp); err != nil {
+			return 0, err
+		}
+	}
+
+	if len(stackNum) != 1 {
+		return 0, errors.New("Invalid expression")
+	}
+
+	return stackNum[0], nil
 }
 
-// Основной обработчик
-func HelloHandler(w http.ResponseWriter, r *http.Request) {
-	name := r.URL.Query().Get("name")
-	if name == "stranger" {
-		fmt.Fprintf(w, "Hello, stranger!")
-	} else {
-		fmt.Fprintf(w, "Hello, %s!", name)
+func calculate(stackNum *[]float64, stackOp *[]rune) error {
+	if len(*stackNum) < 2 {
+		return errors.New("Invalid expression")
 	}
-}
 
-// Функция для проверки, содержит ли строка что-то кроме английских букв
-func isDirtyHacker(name string) bool {
-	// Регулярное выражение для проверки, состоит ли строка только из английских букв
-	match, _ := regexp.MatchString("^[a-zA-Z]+$", name)
-	return !match
-}
+	num2 := (*stackNum)[len(*stackNum)-1]
+	num1 := (*stackNum)[len(*stackNum)-2]
+	*stackNum = (*stackNum)[:len(*stackNum)-2]
 
-func main() {
-	// Устанавливаем обработчик для маршрута /hello с использованием middleware
-	http.HandleFunc("/hello", SetDefaultName(Sanitize(HelloHandler)))
+	op := (*stackOp)[len(*stackOp)-1]
+	*stackOp = (*stackOp)[:len(*stackOp)-1]
 
-	// Запускаем сервер на порту 8080
-	fmt.Println("Starting server on :8080")
-	if err := http.ListenAndServe(":8080", nil); err != nil {
-		fmt.Println("Error starting server:", err)
+	var result float64
+	switch op {
+	case '+':
+		result = num1 + num2
+	case '-':
+		result = num1 - num2
+	case '*':
+		result = num1 * num2
+	case '/':
+		if num2 == 0 {
+			return errors.New("Division by zero")
+		}
+		result = num1 / num2
 	}
+
+	*stackNum = append(*stackNum, result)
+
+	return nil
 }
