@@ -23,7 +23,7 @@ curl --location 'http://localhost:8080/api/v1/calculate' \
 --header 'Content-Type: application/json' \
 --data '{
   "expression": "2+2*2"
-}'
+}'\
 Ожидаемый ответ:
 
 {
@@ -36,7 +36,7 @@ curl --location 'http://localhost:8080/api/v1/calculate' \
 --header 'Content-Type: application/json' \
 --data '{
   "expression": "2+2*x"
-}'
+}'\
 Ожидаемый ответ:
 
 {
@@ -49,7 +49,7 @@ curl --location 'http://localhost:8080/api/v1/calculate' \
 --header 'Content-Type: application/json' \
 --data '{
   "expression": "4/0"
-}'
+}'\
 Ожидаемый ответ:
 
 {
