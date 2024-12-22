@@ -19,8 +19,8 @@ go run yandexGoCalc\cmd\calc_service\main.go
 ### Успешный сценарий
 Чтобы вычислить арифметическое выражение, отправьте POST-запрос с помощью curl:
 ```
-curl --location 'http://localhost:8080/api/v1/calculate' \
---header 'Content-Type: application/json' \
+curl --location 'http://localhost:8080/api/v1/calculate'
+--header 'Content-Type: application/json'
 --data '{
   "expression": "2+2*2"
 }'
